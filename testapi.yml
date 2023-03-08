@@ -1,0 +1,164 @@
+openapi: 3.0.3
+info:
+  title: Test API Spec
+  description: sample description
+  version: "0.0.1"
+  contact:
+    email: hugo.tavares.9@gmail.com
+
+security:
+  - basicAuth: []
+
+servers:
+  - url: https://sample-server/api/
+
+paths:
+  /internal/v1/resource:
+    parameters:
+      - $ref: "https://sky-uk.github.io/sas-openapi/components/parameters/ott-headers.yml#/parameters/xSkyOTTTerritory"
+      - $ref: "https://sky-uk.github.io/sas-openapi/components/parameters/ott-headers.yml#/parameters/xSkyOTTProvider"
+      - $ref: "https://sky-uk.github.io/sas-openapi/components/parameters/ott-headers.yml#/parameters/xSkyOTTProposition"
+      - $ref: "https://sky-uk.github.io/sas-openapi/components/parameters/ott-headers.yml#/parameters/xSkyIntRequestId"
+      - $ref: "#/components/parameters/householdIdParam"
+
+    get:
+      operationId: internalGetResource
+      summary: Get all resouces
+      tags:
+        - resources
+      parameters:
+        - in: query
+          name: includeFutureDated
+          schema:
+            type: boolean
+          description: When set to 'true' it will return any entitlements with a start date in the future. By default these will not be returned.
+      responses:
+        "200":
+          description: Resources found
+          content:
+            application/vnd.entitlements.v1+json:
+              schema:
+                $ref: "#/components/schemas/Resources"
+          headers:
+            "X-SkyInt-RequestId":
+              $ref: "#/components/headers/X-SkyInt-RequestId"
+        "400":
+          description: Request validation errors
+          content:
+            application/json:
+              schema:
+                $ref: "https://sky-uk.github.io/sas-openapi/components/schemas/error.yml#/schemas/Error"
+              examples:
+                TST_00000:
+                  value:
+                    errorCode: "TST_00000"
+                    description: "Invalid Request"
+          headers:
+            "X-SkyInt-RequestId":
+              $ref: "#/components/headers/X-SkyInt-RequestId"
+        "401":
+          description: Security failures
+          content:
+            application/json:
+              schema:
+                $ref: "https://sky-uk.github.io/sas-openapi/components/schemas/error.yml#/schemas/Error"
+              examples:
+                TST_30000:
+                  value:
+                    errorCode: "TST_30000"
+                    description: "Bad credentials."
+          headers:
+            "X-SkyInt-RequestId":
+              $ref: "#/components/headers/X-SkyInt-RequestId"
+        "403":
+          description: Security failures
+          content:
+            application/json:
+              schema:
+                $ref: "https://sky-uk.github.io/sas-openapi/components/schemas/error.yml#/schemas/Error"
+              examples:
+                TST_30001:
+                  value:
+                    errorCode: "TST_30001"
+                    description: "Forbidden action."
+          headers:
+            "X-SkyInt-RequestId":
+              $ref: "#/components/headers/X-SkyInt-RequestId"
+        "429":
+          description: Request load errors
+          content:
+            application/json:
+              schema:
+                $ref: "https://sky-uk.github.io/sas-openapi/components/schemas/error.yml#/schemas/Error"
+              examples:
+                TST_20000:
+                  value:
+                    errorCode: "TST_20000"
+                    description: "Rate limiter opened."
+          headers:
+            "X-SkyInt-RequestId":
+              $ref: "#/components/headers/X-SkyInt-RequestId"
+        "500":
+          description: System failures
+          content:
+            application/json:
+              schema:
+                $ref: "https://sky-uk.github.io/sas-openapi/components/schemas/error.yml#/schemas/Error"
+              examples:
+                TST_00100:
+                  value:
+                    errorCode: "TST_00100"
+                    description: "Unexpected Error"
+          headers:
+            "X-SkyInt-RequestId":
+              $ref: "#/components/headers/X-SkyInt-RequestId"
+        "503":
+          description: Downstream Failures
+          content:
+            application/json:
+              schema:
+                $ref: "https://sky-uk.github.io/sas-openapi/components/schemas/error.yml#/schemas/Error"
+              examples:
+                TST_90002:
+                  value:
+                    errorCode: "TST_90002"
+                    description: "Circuit breaker open"
+          headers:
+            "X-SkyInt-RequestId":
+              $ref: "#/components/headers/X-SkyInt-RequestId"
+
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+  headers:
+    X-SkyInt-RequestId:
+      description: Identifier that can be employed to trace requests through the platform components. If not present each component will generate and return in response headers.
+      schema:
+        type: string
+        example: 43be6896-216b-4c4b-8619-7e2c3e0b8049
+
+  schemas:
+    Resources:
+      type: object
+      properties:
+        entitlements:
+          type: array
+          items:
+            $ref: "#/components/schemas/Resource"
+
+    Resource:
+      type: object
+      properties:
+        name:
+          type: string
+          description: "TBC"
+          example: "TBC"
+        value:
+          type: string
+          description: "TBC"
+          example: "TBC"
+      required:
+        - name
+        - value
