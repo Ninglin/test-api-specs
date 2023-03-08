@@ -153,12 +153,12 @@ components:
       properties:
         name:
           type: string
-          description: "TBC"
-          example: "TBC"
+          description: "name of the resource"
+          example: "CPU"
         value:
           type: string
-          description: "TBC"
-          example: "TBC"
+          description: "Value of the resource"
+          example: "1.5"
       required:
         - name
         - value
