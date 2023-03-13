@@ -1,119 +1,164 @@
-openapi: 3.0.0
-servers:
-  # Added by API Auto Mocking Plugin
-  - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/HUGOTAVARES9/test-api/1.0.0
+openapi: 3.0.3
 info:
-  description: This is a simple API
-  version: "1.0.0"
-  title: Simple Inventory API
+  title: Test API Spec
+  description: sample description
+  version: "0.0.1"
   contact:
-    email: you@your-company.com
-  license:
-    name: Apache 2.0
-    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
-tags:
-  - name: admins
-    description: Secured Admin-only calls
-  - name: developers
-    description: Operations available to regular developers
+    email: hugo.tavares.9@gmail.com
+
+security:
+  - basicAuth: []
+
+servers:
+  - url: https://sample-server/api/
+
 paths:
-  /inventory:
+  /internal/v1/resource:
+    parameters:
+      - $ref: "https://sky-uk.github.io/sas-openapi/components/parameters/ott-headers.yml#/parameters/xSkyOTTTerritory"
+      - $ref: "https://sky-uk.github.io/sas-openapi/components/parameters/ott-headers.yml#/parameters/xSkyOTTProvider"
+      - $ref: "https://sky-uk.github.io/sas-openapi/components/parameters/ott-headers.yml#/parameters/xSkyOTTProposition"
+      - $ref: "https://sky-uk.github.io/sas-openapi/components/parameters/ott-headers.yml#/parameters/xSkyIntRequestId"
+      - $ref: "#/components/parameters/householdIdParam"
+
     get:
+      operationId: internalGetResource
+      summary: Get all resouces
       tags:
-        - developers
-      summary: searches inventory
-      operationId: searchInventory
-      description: |
-        By passing in the appropriate options, you can search for
-        available inventory in the system
+        - resources
       parameters:
         - in: query
-          name: searchString
-          description: pass an optional search string for looking up inventory
-          required: false
+          name: includeFutureDated
           schema:
-            type: string
-        - in: query
-          name: skip
-          description: number of records to skip for pagination
-          schema:
-            type: integer
-            format: int32
-            minimum: 0
-        - in: query
-          name: limit
-          description: maximum number of records to return
-          schema:
-            type: integer
-            format: int32
-            minimum: 0
-            maximum: 50
+            type: boolean
+          description: When set to 'true' it will return any entitlements with a start date in the future. By default these will not be returned.
       responses:
-        '200':
-          description: search results matching criteria
+        "200":
+          description: Resources found
+          content:
+            application/vnd.entitlements.v1+json:
+              schema:
+                $ref: "#/components/schemas/Resources"
+          headers:
+            "X-SkyInt-RequestId":
+              $ref: "#/components/headers/X-SkyInt-RequestId"
+        "400":
+          description: Request validation errors
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/InventoryItem'
-        '400':
-          description: bad input parameter
-    post:
-      tags:
-        - admins
-      summary: adds an inventory item
-      operationId: addInventory
-      description: Adds an item to the system
-      responses:
-        '201':
-          description: item created
-        '400':
-          description: 'invalid input, object invalid'
-        '409':
-          description: an existing item already exists
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/InventoryItem'
-        description: Inventory item to add
+                $ref: "https://sky-uk.github.io/sas-openapi/components/schemas/error.yml#/schemas/Error"
+              examples:
+                TST_00000:
+                  value:
+                    errorCode: "TST_00000"
+                    description: "Invalid Request"
+          headers:
+            "X-SkyInt-RequestId":
+              $ref: "#/components/headers/X-SkyInt-RequestId"
+        "401":
+          description: Security failures
+          content:
+            application/json:
+              schema:
+                $ref: "https://sky-uk.github.io/sas-openapi/components/schemas/error.yml#/schemas/Error"
+              examples:
+                TST_30000:
+                  value:
+                    errorCode: "TST_30000"
+                    description: "Bad credentials."
+          headers:
+            "X-SkyInt-RequestId":
+              $ref: "#/components/headers/X-SkyInt-RequestId"
+        "403":
+          description: Security failures
+          content:
+            application/json:
+              schema:
+                $ref: "https://sky-uk.github.io/sas-openapi/components/schemas/error.yml#/schemas/Error"
+              examples:
+                TST_30001:
+                  value:
+                    errorCode: "TST_30001"
+                    description: "Forbidden action."
+          headers:
+            "X-SkyInt-RequestId":
+              $ref: "#/components/headers/X-SkyInt-RequestId"
+        "429":
+          description: Request load errors
+          content:
+            application/json:
+              schema:
+                $ref: "https://sky-uk.github.io/sas-openapi/components/schemas/error.yml#/schemas/Error"
+              examples:
+                TST_20000:
+                  value:
+                    errorCode: "TST_20000"
+                    description: "Rate limiter opened."
+          headers:
+            "X-SkyInt-RequestId":
+              $ref: "#/components/headers/X-SkyInt-RequestId"
+        "500":
+          description: System failures
+          content:
+            application/json:
+              schema:
+                $ref: "https://sky-uk.github.io/sas-openapi/components/schemas/error.yml#/schemas/Error"
+              examples:
+                TST_00100:
+                  value:
+                    errorCode: "TST_00100"
+                    description: "Unexpected Error"
+          headers:
+            "X-SkyInt-RequestId":
+              $ref: "#/components/headers/X-SkyInt-RequestId"
+        "503":
+          description: Downstream Failures
+          content:
+            application/json:
+              schema:
+                $ref: "https://sky-uk.github.io/sas-openapi/components/schemas/error.yml#/schemas/Error"
+              examples:
+                TST_90002:
+                  value:
+                    errorCode: "TST_90002"
+                    description: "Circuit breaker open"
+          headers:
+            "X-SkyInt-RequestId":
+              $ref: "#/components/headers/X-SkyInt-RequestId"
+
 components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+  headers:
+    X-SkyInt-RequestId:
+      description: Identifier that can be employed to trace requests through the platform components. If not present each component will generate and return in response headers.
+      schema:
+        type: string
+        example: 43be6896-216b-4c4b-8619-7e2c3e0b8049
+
   schemas:
-    InventoryItem:
+    Resources:
       type: object
-      required:
-        - id
-        - name
-        - manufacturer
-        - releaseDate
       properties:
-        id:
-          type: string
-          format: uuid
-          example: d290f1ee-6c54-4b01-90e6-d701748f0851
-        name:
-          type: string
-          example: Widget Adapter
-        releaseDate:
-          type: string
-          format: date-time
-          example: '2016-08-29T09:12:33.001Z'
-        manufacturer:
-          $ref: '#/components/schemas/Manufacturer'
-    Manufacturer:
-      required:
-        - name
+        entitlements:
+          type: array
+          items:
+            $ref: "#/components/schemas/Resource"
+
+    Resource:
+      type: object
       properties:
         name:
           type: string
-          example: ACME Corporation
-        homePage:
+          description: "TBC"
+          example: "TBC"
+        value:
           type: string
-          format: url
-          example: 'https://www.acme-corp.com'
-        phone:
-          type: string
-          example: 408-867-5309
-      type: object
+          description: "TBC"
+          example: "TBC"
+      required:
+        - name
+        - value
