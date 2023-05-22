@@ -1,0 +1,23 @@
+schemas:
+  Resources:
+    type: object
+    properties:
+      entitlements:
+        type: array
+        items:
+          $ref: "#/components/schemas/Resource"
+
+  Resource:
+    type: object
+    properties:
+      name:
+        type: string
+        description: "TBC"
+        example: "TBC"
+      value:
+        type: string
+        description: "TBC"
+        example: "TBC"
+    required:
+      - name
+      - value

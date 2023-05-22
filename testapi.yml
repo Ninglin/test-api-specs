@@ -38,7 +38,7 @@ paths:
           content:
             application/vnd.entitlements.v1+json:
               schema:
-                $ref: "#/components/schemas/Resources"
+                $ref: "schema/responses/resources.yaml#schemas/Resources"
           headers:
             "X-SkyInt-RequestId":
               $ref: "#/components/headers/X-SkyInt-RequestId"
@@ -138,27 +138,3 @@ components:
       schema:
         type: string
         example: 43be6896-216b-4c4b-8619-7e2c3e0b8049
-
-  schemas:
-    Resources:
-      type: object
-      properties:
-        entitlements:
-          type: array
-          items:
-            $ref: "#/components/schemas/Resource"
-
-    Resource:
-      type: object
-      properties:
-        name:
-          type: string
-          description: "TBC"
-          example: "TBC"
-        value:
-          type: string
-          description: "TBC"
-          example: "TBC"
-      required:
-        - name
-        - value
